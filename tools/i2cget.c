@@ -44,6 +44,7 @@ static void help(void)
 		"  MODE is one of:\n"
 		"    b (read byte data, default)\n"
 		"    w (read word data)\n"
+		"    W (read 32 bit data)\n"
 		"    c (write byte/read byte)\n"
 		"    Append p for SMBus PEC\n");
 	exit(1);
@@ -82,6 +83,12 @@ static int check_funcs(int file, int size, int daddress, int pec)
 
 	case I2C_SMBUS_WORD_DATA:
 		if (!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA)) {
+			fprintf(stderr, MISSING_FUNC_FMT, "SMBus read word");
+			return -1;
+		}
+		break;
+	case I2C_SMBUS_LONG_WORD_DATA:
+		if (!(funcs & I2C_FUNC_SMBUS_READ_LONG_WORD_DATA)) {
 			fprintf(stderr, MISSING_FUNC_FMT, "SMBus read word");
 			return -1;
 		}
@@ -150,7 +157,7 @@ static int confirm(const char *filename, int address, int size, int daddress,
 int main(int argc, char *argv[])
 {
 	char *end;
-	int res, i2cbus, address, size, file;
+	__u32 res, i2cbus, address, size, file;
 	int daddress;
 	char filename[20];
 	int pec = 0;
@@ -204,6 +211,7 @@ int main(int argc, char *argv[])
 		switch (argv[flags+4][0]) {
 		case 'b': size = I2C_SMBUS_BYTE_DATA; break;
 		case 'w': size = I2C_SMBUS_WORD_DATA; break;
+		case 'W': size = I2C_SMBUS_LONG_WORD_DATA; break;
 		case 'c': size = I2C_SMBUS_BYTE; break;
 		default:
 			fprintf(stderr, "Error: Invalid mode!\n");
@@ -228,6 +236,8 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	int print_size = 2;
+	
 	switch (size) {
 	case I2C_SMBUS_BYTE:
 		if (daddress >= 0) {
@@ -236,9 +246,15 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "Warning - write failed\n");
 		}
 		res = i2c_smbus_read_byte(file);
+		print_size = 2;
 		break;
 	case I2C_SMBUS_WORD_DATA:
 		res = i2c_smbus_read_word_data(file, daddress);
+		print_size = I2C_SMBUS_WORD_DATA;
+		break;
+	case I2C_SMBUS_LONG_WORD_DATA:
+		res = i2c_smbus_read_long_word_data(file, daddress);
+		print_size = I2C_SMBUS_LONG_WORD_DATA;
 		break;
 	default: /* I2C_SMBUS_BYTE_DATA */
 		res = i2c_smbus_read_byte_data(file, daddress);
@@ -250,7 +266,12 @@ int main(int argc, char *argv[])
 		exit(2);
 	}
 
-	printf("0x%0*x\n", size == I2C_SMBUS_WORD_DATA ? 4 : 2, res);
+
+
+
+
+
+	printf("0x%0*x\n", print_size, res);
 
 	exit(0);
 }

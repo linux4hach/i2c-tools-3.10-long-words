@@ -61,6 +61,7 @@ struct i2c_msg {
 #define I2C_FUNC_SMBUS_READ_BYTE_DATA	0x00080000 
 #define I2C_FUNC_SMBUS_WRITE_BYTE_DATA	0x00100000 
 #define I2C_FUNC_SMBUS_READ_WORD_DATA	0x00200000 
+#define I2C_FUNC_SMBUS_READ_LONG_WORD_DATA	0x00400000 
 #define I2C_FUNC_SMBUS_WRITE_WORD_DATA	0x00400000 
 #define I2C_FUNC_SMBUS_PROC_CALL	0x00800000 
 #define I2C_FUNC_SMBUS_READ_BLOCK_DATA	0x01000000 
@@ -90,6 +91,7 @@ struct i2c_msg {
 union i2c_smbus_data {
 	__u8 byte;
 	__u16 word;
+	__u32 long_word;
 	__u8 block[I2C_SMBUS_BLOCK_MAX + 2]; /* block[0] is used for length */
 	                                            /* and one more for PEC */
 };
@@ -109,7 +111,7 @@ union i2c_smbus_data {
 #define I2C_SMBUS_I2C_BLOCK_BROKEN  6
 #define I2C_SMBUS_BLOCK_PROC_CALL   7		/* SMBus 2.0 */
 #define I2C_SMBUS_I2C_BLOCK_DATA    8
-
+#define I2C_SMBUS_LONG_WORD_DATA    8 
 
 /* ----- commands for the ioctl like i2c_command call:
  * note that additional calls are defined in the algorithm and hw 
@@ -218,6 +220,16 @@ static inline __s32 i2c_smbus_read_word_data(int file, __u8 command)
 		return -1;
 	else
 		return 0x0FFFF & data.word;
+}
+
+static inline __s32 i2c_smbus_read_long_word_data(int file, __u8 command)
+{
+	union i2c_smbus_data data;
+	if (i2c_smbus_access(file,I2C_SMBUS_READ,command,
+	                     I2C_SMBUS_LONG_WORD_DATA,&data))
+		return -1;
+	else
+		return data.long_word;
 }
 
 static inline __s32 i2c_smbus_write_word_data(int file, __u8 command, 
