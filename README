@@ -74,3 +74,6 @@ Please post your questions and bug reports to the linux-i2c mailing list:
   linux-i2c@vger.kernel.org
 For additional information about this list, see:
   http://vger.kernel.org/vger-lists.html#linux-i2c
+
+Christopher P. Fair
+I have added the ability to have large words because I needed it.   The rest is identical to his earlier version.   
