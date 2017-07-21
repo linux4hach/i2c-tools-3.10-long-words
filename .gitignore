@@ -50,3 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+tools/i2cdetect
+tools/i2cdump
+tools/i2cget
+tools/i2cset

@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
 		break;
 	case I2C_SMBUS_LONG_WORD_DATA:
 		res = i2c_smbus_read_long_word_data(file, daddress);
-		print_size = I2C_SMBUS_LONG_WORD_DATA;
+		print_size = I2C_SMBUS_LONG_WORD_DATA-2;
 		break;
 	default: /* I2C_SMBUS_BYTE_DATA */
 		res = i2c_smbus_read_byte_data(file, daddress);

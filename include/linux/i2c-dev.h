@@ -229,7 +229,7 @@ static inline __s32 i2c_smbus_read_long_word_data(int file, __u8 command)
 	                     I2C_SMBUS_LONG_WORD_DATA,&data))
 		return -1;
 	else
-		return data.long_word;
+		return 0xFFFFFF00 & data.long_word;
 }
 
 static inline __s32 i2c_smbus_write_word_data(int file, __u8 command, 
