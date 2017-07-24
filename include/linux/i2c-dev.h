@@ -27,7 +27,7 @@
 
 #include <linux/types.h>
 #include <sys/ioctl.h>
-
+#include <stdio.h>
 
 /* -- i2c.h -- */
 
@@ -91,9 +91,13 @@ struct i2c_msg {
 union i2c_smbus_data {
 	__u8 byte;
 	__u16 word;
-	__u32 long_word;
 	__u8 block[I2C_SMBUS_BLOCK_MAX + 2]; /* block[0] is used for length */
 	                                            /* and one more for PEC */
+};
+
+union long_word_data {
+	__u32 word;
+	__u8 block[I2C_SMBUS_BLOCK_MAX]; 
 };
 
 /* smbus_access read or write markers */
@@ -111,7 +115,7 @@ union i2c_smbus_data {
 #define I2C_SMBUS_I2C_BLOCK_BROKEN  6
 #define I2C_SMBUS_BLOCK_PROC_CALL   7		/* SMBus 2.0 */
 #define I2C_SMBUS_I2C_BLOCK_DATA    8
-#define I2C_SMBUS_LONG_WORD_DATA    8 
+#define I2C_SMBUS_LONG_WORD_DATA    9 
 
 /* ----- commands for the ioctl like i2c_command call:
  * note that additional calls are defined in the algorithm and hw 
@@ -222,14 +226,45 @@ static inline __s32 i2c_smbus_read_word_data(int file, __u8 command)
 		return 0x0FFFF & data.word;
 }
 
-static inline __s32 i2c_smbus_read_long_word_data(int file, __u8 command)
+static inline __u32 toggle_endian(__u32 num)
+{
+	__u32 swapped = ((num>>24)&0xff) | // move byte 3 to byte 0
+		((num<<8)&0xff0000) | // move byte 1 to byte 2
+		((num>>8)&0xff00) | // move byte 2 to byte 1
+		((num<<24)&0xff000000); // byte 0 to byte 3
+	return swapped;
+}
+
+
+static inline __u32 i2c_smbus_read_long_word_data(int file, __u8 command)
 {
 	union i2c_smbus_data data;
-	if (i2c_smbus_access(file,I2C_SMBUS_READ,command,
-	                     I2C_SMBUS_LONG_WORD_DATA,&data))
-		return -1;
-	else
-		return 0xFFFFFF00 & data.long_word;
+	union long_word_data returned_data;
+	__u32 cleaned_data;
+	__s32 access_status =0;
+
+	while ( access_status == 0) 
+	{
+		
+		access_status = i2c_smbus_access(file,I2C_SMBUS_READ,command, 
+													I2C_SMBUS_I2C_BLOCK_DATA,&data);
+
+		if ((data.block[1] != 0x80) )
+		{
+			access_status = 0;
+		}
+
+	}
+
+
+	memcpy(returned_data.block, data.block + 1, 8 * sizeof(__u8));
+
+			
+	__u32 bitmask = 0x3fffffc0;
+	__u32 bitshift = 6;
+
+	cleaned_data = (toggle_endian(returned_data.word) & bitmask) >> bitshift;
+	return cleaned_data;
 }
 
 static inline __s32 i2c_smbus_write_word_data(int file, __u8 command, 
