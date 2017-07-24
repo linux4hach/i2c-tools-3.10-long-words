@@ -249,11 +249,6 @@ static inline __u32 i2c_smbus_read_long_word_data(int file, __u8 command)
 		access_status = i2c_smbus_access(file,I2C_SMBUS_READ,command, 
 													I2C_SMBUS_I2C_BLOCK_DATA,&data);
 
-		if ((data.block[1] != 0x80) )
-		{
-			access_status = 0;
-		}
-
 	}
 
 
@@ -264,6 +259,7 @@ static inline __u32 i2c_smbus_read_long_word_data(int file, __u8 command)
 	__u32 bitshift = 6;
 
 	cleaned_data = (toggle_endian(returned_data.word) & bitmask) >> bitshift;
+
 	return cleaned_data;
 }
 
