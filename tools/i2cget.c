@@ -44,7 +44,7 @@ static void help(void)
 		"  MODE is one of:\n"
 		"    b (read byte data, default)\n"
 		"    w (read word data)\n"
-		"    W (read 32 bit data)\n"
+		"    l (read 32 bit data)\n"
 		"    c (write byte/read byte)\n"
 		"    Append p for SMBus PEC\n");
 	exit(1);
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
 		switch (argv[flags+4][0]) {
 		case 'b': size = I2C_SMBUS_BYTE_DATA; break;
 		case 'w': size = I2C_SMBUS_WORD_DATA; break;
-		case 'W': size = I2C_SMBUS_LONG_WORD_DATA; break;
+		case 'l': size = I2C_SMBUS_LONG_WORD_DATA; break;
 		case 'c': size = I2C_SMBUS_BYTE; break;
 		default:
 			fprintf(stderr, "Error: Invalid mode!\n");
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
 		break;
 	case I2C_SMBUS_LONG_WORD_DATA:
 		res = i2c_smbus_read_long_word_data(file, daddress);
-		print_size = I2C_SMBUS_LONG_WORD_DATA-2;
+		print_size = 11;
 		break;
 	default: /* I2C_SMBUS_BYTE_DATA */
 		res = i2c_smbus_read_byte_data(file, daddress);

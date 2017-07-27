@@ -240,7 +240,7 @@ static inline __u32 i2c_smbus_read_long_word_data(int file, __u8 command)
 {
 	union i2c_smbus_data data;
 	union long_word_data returned_data;
-	__u32 cleaned_data;
+	__u32 cleaned_data = 0xffffffff;
 	__s32 access_status =0;
 
 	int time_out = 10;
@@ -251,6 +251,8 @@ static inline __u32 i2c_smbus_read_long_word_data(int file, __u8 command)
 
 		access_status = i2c_smbus_access(file,I2C_SMBUS_READ,command, 
 													I2C_SMBUS_I2C_BLOCK_DATA,&data);
+
+		if (access_status == 0) break;
 
 	}
 
